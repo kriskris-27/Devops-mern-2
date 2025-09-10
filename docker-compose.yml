@@ -1,6 +1,7 @@
 services:
   mongo:
-    image: mongo:7
+    image:
+      "mongo" 
     ports:
       - "8080:27017"
 
