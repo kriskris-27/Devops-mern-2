@@ -34,6 +34,8 @@ jobs:
 
       - name: Seed MongoDB
         working-directory: ./backend
+        env:
+          MONGO_URI: mongodb://localhost:27017/tasksdb
         run: |
           npm install
           node seedTasksData.js
@@ -73,4 +75,6 @@ jobs:
 
       - name : running backend tests
         working-directory : ./backend
+        env:
+          MONGO_URI: mongodb://localhost:27017/tasksdb
         run : npm test
