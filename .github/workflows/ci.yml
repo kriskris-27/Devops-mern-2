@@ -42,6 +42,10 @@ jobs:
       ubuntu-latest
     needs : mongo-init
 
+    env:
+      PORT: ${{secrets.PORT}}
+      MONGO_URI: ${{secrets.MONGO_URI}}
+
     services:
       mongo:
         image: mongo:7
