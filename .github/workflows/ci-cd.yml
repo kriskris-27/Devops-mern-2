@@ -1,0 +1,65 @@
+name: MERN CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    env:
+      PORT: ${{secrets.PORT}}
+      MONGO_URI: ${{secrets.MONGO_URI}}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Wait for MongoDB
+        run: |
+          until nc -z localhost 27017; do
+            echo "Waiting for mongodb..."
+            sleep 2
+          done
+          echo "MongoDB is ready"
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Seed MongoDB
+        working-directory: ./backend
+        run: node seedTasksData.js
+
+      - name: Run Tests
+        working-directory: ./backend
+        run: npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd Devops-mern-2/
+            git pull origin main
+            docker-compose down
+            docker-compose up --build -d
+
